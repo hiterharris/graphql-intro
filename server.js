@@ -47,7 +47,7 @@ const userInfo = [
     }
 ];
 
-const UserType = new GraphQLObjectType({
+const UsersType = new GraphQLObjectType({
     name: 'User',
     description: 'List of users',
     fields: () => ({
@@ -56,9 +56,6 @@ const UserType = new GraphQLObjectType({
         password: {type: new GraphQLNonNull(GraphQLString)},
         user: {
             type: UserInfoType,
-            resolve: (user) => {
-                return userInfo.find(userInfo => userInfo.id === user.id)
-            }
         }
     })
 });
@@ -75,10 +72,18 @@ const UserInfoType = new GraphQLObjectType({
 
 const RootQueryType = new GraphQLObjectType({
     name: 'Query',
-    descrition: 'Root Query',
+    descrition: 'root query',
     fields: () => ({
+        user: {
+            type: UsersType,
+            description: 'single user',
+            args: {
+                id: {type: GraphQLInt}
+            },
+            resolve: (parent, args) => users.find(user => user.id === args.id)
+        },
         users: {
-            type: new GraphQLList(UserType),
+            type: new GraphQLList(UsersType),
             description: 'List of users',
             resolve: () => users
         },
@@ -97,5 +102,6 @@ const schema = new GraphQLSchema({
 app.use('/graphql', expressGraphQL({
     schema: schema,
     graphiql: true
-}))
-app.listen(3001, () => console.log(`Server running on port ${PORT}`));
+}));
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
