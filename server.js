@@ -72,11 +72,11 @@ const UserInfoType = new GraphQLObjectType({
 
 const RootQueryType = new GraphQLObjectType({
     name: 'Query',
-    descrition: 'root query',
+    descrition: 'Root Query',
     fields: () => ({
         user: {
             type: UsersType,
-            description: 'single user',
+            description: 'Single User',
             args: {
                 id: {type: GraphQLInt}
             },
@@ -84,19 +84,53 @@ const RootQueryType = new GraphQLObjectType({
         },
         users: {
             type: new GraphQLList(UsersType),
-            description: 'List of users',
+            description: 'List of Users',
             resolve: () => users
         },
         userInfo: {
             type: new GraphQLList(UserInfoType),
-            description: 'USer Info',
+            description: 'User Info',
             resolve: () => userInfo
         },
     })
 });
 
+const RootMutationType = new GraphQLObjectType({
+    name: 'Mutation',
+    description: 'Root Mutation',
+    fields: () => ({
+        addUser: {
+            type: UsersType,
+            description: 'Add User',
+            args: {
+                username: { type: GraphQLNonNull(GraphQLString)},
+                password: { type: GraphQLNonNull(GraphQLString)}
+            },
+            resolve: (parent, args) => {
+                const newUser = {id: users.length + 1, username: args.username, password: args.password}
+                users.push(newUser)
+                return newUser
+            }
+        },
+        addUserInfo: {
+            type: UserInfoType,
+            description: 'Add User Info',
+            args: {
+                name: { type: GraphQLNonNull(GraphQLString)},
+                age: { type: GraphQLNonNull(GraphQLInt)}
+            },
+            resolve: (parent, args) => {
+                const newUserInfo = {id: users.length + 1, name: args.name, age: args.age}
+                userInfo.push(newUserInfo)
+                return newUserInfo
+            }
+        }
+    })
+})
+
 const schema = new GraphQLSchema({
-    query: RootQueryType
+    query: RootQueryType,
+    mutation: RootMutationType
 });
 
 app.use('/graphql', expressGraphQL({
